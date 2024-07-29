@@ -1,7 +1,5 @@
 package Service;
 
-
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,9 +18,6 @@ public class StockService {
 
     @Autowired
     private ExccelReader excelReader;
-
-    private static final String EXCEL_FILE_PATH = "src/main/resources/Book1.xlsx";
-
 
     public List<Stock> fetchStockData(List<String> stockSymbols) {
         List<Stock> stocks = new ArrayList<>();
@@ -114,7 +109,7 @@ public class StockService {
     }
 
     public List<Stock> findStocksNearAllTimeLow(double thresholdPercentage) {
-        List<String> stockSymbols = excelReader.readStockSymbols(EXCEL_FILE_PATH);
+        List<String> stockSymbols = excelReader.readStockSymbols();
         List<Stock> stocks = fetchStockData(stockSymbols);
         return getStocksNearAllTimeLow(stocks, thresholdPercentage);
     }
