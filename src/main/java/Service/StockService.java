@@ -21,7 +21,8 @@ public class StockService {
     @Autowired
     private ExccelReader excelReader;
 
-    private static final String EXCEL_FILE_PATH = "D:\\project Bio\\Book1.xlsx";
+    private static final String EXCEL_FILE_PATH = "src/main/resources/Book1.xlsx";
+
 
     public List<Stock> fetchStockData(List<String> stockSymbols) {
         List<Stock> stocks = new ArrayList<>();
