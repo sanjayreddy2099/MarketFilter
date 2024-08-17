@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stocks Near All-Time Low</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 6px solid #007bff;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .no-data {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stocks Near All-Time Low</h1>
+        <button onclick="fetchStocks()">Find All Time Low Stocks</button>
+        <div class="loader" id="loader"></div>
+        <div id="noData" class="no-data" style="display: none;">No data found</div>
+        <table id="stocksTable">
+            <thead>
+                <tr>
+                    <th>Symbol</th>
+                    <th>High</th>
+                    <th>Low</th>
+                    <th>Current Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Stock data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchStocks() {
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('noData').style.display = 'none';
+            try {
+                const response = await fetch('http://localhost:8089/api/stocks/near-all-time-low');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const stocks = await response.json();
+                displayStocks(stocks);
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+
+        function displayStocks(stocks) {
+            const tableBody = document.getElementById('stocksTable').getElementsByTagName('tbody')[0];
+            const noDataDiv = document.getElementById('noData');
+            tableBody.innerHTML = ''; // Clear existing table rows
+
+            if (stocks.length === 0) {
+                noDataDiv.style.display = 'block';
+            } else {
+                noDataDiv.style.display = 'none';
+                stocks.forEach(stock => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${stock.symbol}</td>
+                        <td>${stock.high}</td>
+                        <td>${stock.low}</td>
+                        <td>${stock.currentPrice}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

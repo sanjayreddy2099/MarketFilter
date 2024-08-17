@@ -1,0 +1,15 @@
+<div th:fragment="content">
+    <div class="row">
+        <div class="col-md-3">
+            <nav class="nav flex-column">
+                <a class="nav-link" th:href="@{/dashboard/index}">Index Current Prices</a>
+                <a class="nav-link" th:href="@{/dashboard/sectoral-indices}">Sectoral Indices</a>
+                <a class="nav-link" th:href="@{/dashboard/all-time-high}">All-Time High Stocks</a>
+                <a class="nav-link" th:href="@{/dashboard/all-time-low}">All-Time Low Stocks</a>
+            </nav>
+        </div>
+        <div class="col-md-9">
+            <div th:replace="${template} :: content"></div>
+        </div>
+    </div>
+</div>
