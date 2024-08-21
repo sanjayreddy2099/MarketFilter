@@ -1,5 +1,6 @@
 package com.MarketFilter.MarketFilter.Model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,10 +14,13 @@ public class Stock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(name = "symbol")
     private String symbol;
+    @Column(name = "high")
     private double high;
+    @Column(name = "low")
     private double low;
+    @Column(name = "current_price")
     private double currentPrice;
 
 

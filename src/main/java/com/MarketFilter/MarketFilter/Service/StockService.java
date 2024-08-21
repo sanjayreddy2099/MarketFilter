@@ -25,7 +25,7 @@ public class StockService {
     @Autowired
     private StockRepository stockRepository;
 
-    @Scheduled(cron = "0 0 18 * * ?") 
+    @Scheduled(cron = "0 0 18 * * ?", zone = "Asia/Kolkata")
     @Transactional
     public void fetchAndStoreStockData() {
         List<String> stockSymbols = excelReader.readStockSymbols();
