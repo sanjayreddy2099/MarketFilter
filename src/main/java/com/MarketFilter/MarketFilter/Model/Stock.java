@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "stock") // Specifies the table name in the database
+@Table(name = "stock") 
 public class Stock {
 
     @Id

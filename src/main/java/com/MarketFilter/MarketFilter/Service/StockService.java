@@ -5,7 +5,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +14,9 @@ import com.MarketFilter.MarketFilter.Repository.StockRepository;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class StockService {
@@ -25,7 +27,19 @@ public class StockService {
     @Autowired
     private StockRepository stockRepository;
 
-    @Scheduled(cron = "0 0 18 * * ?", zone = "Asia/Kolkata")
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+    // Initialize the scheduler
+    public StockService() {
+        startScheduledTasks();
+    }
+
+    private void startScheduledTasks() {
+        Runnable fetchTask = this::fetchAndStoreStockData;
+        // Schedule the task to run every 6 hours
+        scheduler.scheduleAtFixedRate(fetchTask, 0, 6, TimeUnit.HOURS);
+    }
+
     @Transactional
     public void fetchAndStoreStockData() {
         List<String> stockSymbols = excelReader.readStockSymbols();
@@ -33,16 +47,13 @@ public class StockService {
         List<Stock> nearAllTimeLowStocks = getStocksNearAllTimeLow(stocks, 2.0); 
 
         for (Stock stock : nearAllTimeLowStocks) {
-           
             Stock existingStock = stockRepository.findBySymbol(stock.getSymbol());
             if (existingStock != null) {
-                
                 existingStock.setHigh(stock.getHigh());
                 existingStock.setLow(stock.getLow());
                 existingStock.setCurrentPrice(stock.getCurrentPrice());
                 stockRepository.save(existingStock);
             } else {
-               
                 stockRepository.save(stock);
             }
         }

@@ -118,7 +118,7 @@
             document.getElementById('loader').style.display = 'block';
             document.getElementById('noData').style.display = 'none';
             try {
-                const response = await fetch('./api/stocks/near-all-time-low');
+                const response = await fetch('http://localhost:8089/api/stocks/near-all-time-low');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
