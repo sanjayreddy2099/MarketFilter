@@ -17,16 +17,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class Nifty50Service {
+public class NiftyNext50Service {
 
-	private static final String URL = "https://moneycontrol.com/stocks/marketstats/indcontrib.php?optex=NSE&opttopic=indcontrib&index=9";
-	private static final long CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+	private static final String URL = "https://www.moneycontrol.com/stocks/marketstats/indcontrib.php?optex=NSE&opttopic=indcontrib&index=6";
+	private static final long CACHE_DURATION = 2 * 60 * 60 * 1000; 
 	
 
 	private final ConcurrentHashMap<String, List<Map<String, String>>> cache = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-	public Nifty50Service() {
+	public NiftyNext50Service() {
 
 		scheduler.scheduleAtFixedRate(this::fetchAndCacheData, 0, CACHE_DURATION, TimeUnit.MILLISECONDS);
 	}

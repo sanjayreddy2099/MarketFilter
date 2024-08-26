@@ -1,5 +1,7 @@
 package com.MarketFilter.MarketFilter.Service;
 
+
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -17,16 +19,16 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
-public class Nifty50Service {
+public class niftyMidCapService {
 
-	private static final String URL = "https://moneycontrol.com/stocks/marketstats/indcontrib.php?optex=NSE&opttopic=indcontrib&index=9";
+	private static final String URL = "https://www.moneycontrol.com/stocks/marketstats/indcontrib.php?optex=NSE&opttopic=indcontrib&index=27";
 	private static final long CACHE_DURATION = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
 	
 
 	private final ConcurrentHashMap<String, List<Map<String, String>>> cache = new ConcurrentHashMap<>();
 	private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-	public Nifty50Service() {
+	public niftyMidCapService() {
 
 		scheduler.scheduleAtFixedRate(this::fetchAndCacheData, 0, CACHE_DURATION, TimeUnit.MILLISECONDS);
 	}
@@ -60,3 +62,4 @@ public class Nifty50Service {
 	}
 
 }
+
