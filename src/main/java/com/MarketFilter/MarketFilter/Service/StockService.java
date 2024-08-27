@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.MarketFilter.MarketFilter.Model.AllTimeHighStocks;
 import com.MarketFilter.MarketFilter.Model.Stock;
+import com.MarketFilter.MarketFilter.Repository.AllTimeHighStocksRepository;
 import com.MarketFilter.MarketFilter.Repository.StockRepository;
 
 import javax.annotation.PostConstruct;
@@ -27,6 +29,9 @@ public class StockService {
 
     @Autowired
     private StockRepository stockRepository;
+    
+    @Autowired
+    private AllTimeHighStocksRepository allTimeHighStocksRepository;
 
     // Separate executor for this service
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -36,7 +41,7 @@ public class StockService {
     public void startScheduledTasks() {
         Runnable fetchTask = this::fetchAndStoreStockData;
         // Schedule the task to run immediately, then every 6 hours
-        scheduler.scheduleAtFixedRate(fetchTask, 0, 6, TimeUnit.HOURS);
+        scheduler.scheduleAtFixedRate(fetchTask, 0, 12, TimeUnit.HOURS);
     }
 
     @Transactional
@@ -45,6 +50,9 @@ public class StockService {
         List<String> stockSymbols = excelReader.readStockSymbols();
         List<Stock> stocks = fetchStockData(stockSymbols);
         List<Stock> nearAllTimeLowStocks = getStocksNearAllTimeLow(stocks, 2.0); 
+        List<Stock> nearAllTimeHighStocks = getStocksNearAllTimeHigh(stocks, 2.0);
+       
+        
 
         for (Stock stock : nearAllTimeLowStocks) {
             Stock existingStock = stockRepository.findBySymbol(stock.getSymbol());
@@ -143,14 +151,41 @@ public class StockService {
 
             double thresholdPrice = low * (1 + thresholdPercentage / 100);
             if (currentPrice <= thresholdPrice) {
+            	 System.out.println("Near All-Time High Stock: " + stock);
                 nearAllTimeLowStocks.add(stock);
             }
         }
         return nearAllTimeLowStocks;
     }
+    
+    
+    public List<Stock> getStocksNearAllTimeHigh(List<Stock> stocks, double thresholdPercentage) {
+        List<Stock> nearAllTimeHighStocks = new ArrayList<>();
+        
+        for (Stock stock : stocks) {
+            double high = stock.getHigh();
+            double currentPrice = stock.getCurrentPrice();
+
+            
+            double thresholdPrice = high * (1 - thresholdPercentage / 100);
+
+           
+            if (currentPrice >= thresholdPrice) {
+            	 System.out.println("Near All-Time lOW Stock: " + stock);
+                nearAllTimeHighStocks.add(stock);
+            }
+        }
+
+        return nearAllTimeHighStocks;
+    }
+
+
 
     public List<Stock> findStocksNearAllTimeLow() {
         return stockRepository.findAll();
+    }
+    public List<AllTimeHighStocks> findStocksNearAllTimeHigh() {
+        return allTimeHighStocksRepository.findAll();
     }
 
     private boolean isValidNumber(String str) {
