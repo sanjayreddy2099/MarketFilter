@@ -3,9 +3,6 @@ package com.MarketFilter.MarketFilter.Service;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -22,23 +19,11 @@ public class NseDataService {
     private static final String NIFTY_PHARMA_URL = "https://www.moneycontrol.com/indian-indices/nifty-pharma-41.html";
     private static final String NIFTY_AUTO_URL = "https://www.moneycontrol.com/indian-indices/nifty-auto-52.html";
 
-    // Cache to store data
-    private Map<String, Map<String, String>> cache = new HashMap<>();
+    
+    private final Map<String, Map<String, String>> cache = new HashMap<>();
 
-    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
-    // Constructor
-    public NseDataService() {
-        fetchAndCacheData(); // Initial data load
-        startScheduledUpdates(); // Start periodic updates
-    }
-
-    private void startScheduledUpdates() {
-        scheduler.scheduleAtFixedRate(this::fetchAndCacheData, 0, 10, TimeUnit.MINUTES);
-    }
-
-    // Method to fetch and update cache
-    private void fetchAndCacheData() {
+ 
+    public void fetchAndCacheData() {
         System.out.println("Fetching and updating data...");
         cache.put("NIFTY", fetchData(NIFTY_URL));
         cache.put("BANK_NIFTY", fetchData(BANK_NIFTY_URL));
@@ -48,10 +33,13 @@ public class NseDataService {
         cache.put("NIFTY_AUTO", fetchData(NIFTY_AUTO_URL));
     }
 
+  
     public Map<String, Map<String, String>> fetchAllIndexData() {
-        return new HashMap<>(cache); // Return a copy of the cached data
+        
+        return new HashMap<>(cache);
     }
 
+    
     private Map<String, String> fetchData(String url) {
         Map<String, String> data = new HashMap<>();
         try {
@@ -74,6 +62,7 @@ public class NseDataService {
             data.put("yearLow", "Error fetching data");
             data.put("yearlyHigh", "Error fetching data");
             data.put("change", "Error fetching data");
+            System.err.println("Error fetching data from URL: " + url + " - " + e.getMessage());
         }
         return data;
     }

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.MarketFilter.MarketFilter.Model.Stock;
 import com.MarketFilter.MarketFilter.Repository.StockRepository;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,21 +28,20 @@ public class StockService {
     @Autowired
     private StockRepository stockRepository;
 
+    // Separate executor for this service
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    // Initialize the scheduler
-    public StockService() {
-        startScheduledTasks();
-    }
-
-    private void startScheduledTasks() {
+    // Initialize the scheduler after the bean is constructed
+    @PostConstruct
+    public void startScheduledTasks() {
         Runnable fetchTask = this::fetchAndStoreStockData;
-        // Schedule the task to run every 6 hours
+        // Schedule the task to run immediately, then every 6 hours
         scheduler.scheduleAtFixedRate(fetchTask, 0, 6, TimeUnit.HOURS);
     }
 
     @Transactional
     public void fetchAndStoreStockData() {
+        System.out.println("Fetching stock data...");
         List<String> stockSymbols = excelReader.readStockSymbols();
         List<Stock> stocks = fetchStockData(stockSymbols);
         List<Stock> nearAllTimeLowStocks = getStocksNearAllTimeLow(stocks, 2.0); 
@@ -92,8 +92,8 @@ public class StockService {
                     continue;
                 }
 
-                Element highLowElement = doc.select("li:contains(High / Low) .nowrap.value").first();
-                Element currentPriceElement = doc.select("li:contains(Current Price) .nowrap.value").first();
+                Element highLowElement = doc.select("li:contains(High / Low) span.nowrap.value").first();
+                Element currentPriceElement = doc.select("li:contains(Current Price) span.nowrap.value").first();
 
                 if (highLowElement != null && currentPriceElement != null) {
                     Elements numbers = highLowElement.select("span.number");
