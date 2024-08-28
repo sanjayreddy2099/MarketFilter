@@ -29,7 +29,7 @@ public class StockService {
 
     @Autowired
     private StockRepository stockRepository;
-    
+
     @Autowired
     private AllTimeHighStocksRepository allTimeHighStocksRepository;
 
@@ -40,7 +40,7 @@ public class StockService {
     @PostConstruct
     public void startScheduledTasks() {
         Runnable fetchTask = this::fetchAndStoreStockData;
-        // Schedule the task to run immediately, then every 6 hours
+        // Schedule the task to run immediately, then every 12 hours
         scheduler.scheduleAtFixedRate(fetchTask, 0, 12, TimeUnit.HOURS);
     }
 
@@ -49,10 +49,8 @@ public class StockService {
         System.out.println("Fetching stock data...");
         List<String> stockSymbols = excelReader.readStockSymbols();
         List<Stock> stocks = fetchStockData(stockSymbols);
-        List<Stock> nearAllTimeLowStocks = getStocksNearAllTimeLow(stocks, 2.0); 
+        List<Stock> nearAllTimeLowStocks = getStocksNearAllTimeLow(stocks, 2.0);
         List<Stock> nearAllTimeHighStocks = getStocksNearAllTimeHigh(stocks, 2.0);
-       
-        
 
         for (Stock stock : nearAllTimeLowStocks) {
             Stock existingStock = stockRepository.findBySymbol(stock.getSymbol());
@@ -65,6 +63,9 @@ public class StockService {
                 stockRepository.save(stock);
             }
         }
+
+        // Process and save near all-time high stocks
+        processAndSaveNearAllTimeHighStocks(nearAllTimeHighStocks);
     }
 
     public List<Stock> fetchStockData(List<String> stockSymbols) {
@@ -151,27 +152,24 @@ public class StockService {
 
             double thresholdPrice = low * (1 + thresholdPercentage / 100);
             if (currentPrice <= thresholdPrice) {
-            	 System.out.println("Near All-Time High Stock: " + stock);
+                System.out.println("Near All-Time Low Stock: " + stock);
                 nearAllTimeLowStocks.add(stock);
             }
         }
         return nearAllTimeLowStocks;
     }
-    
-    
+
     public List<Stock> getStocksNearAllTimeHigh(List<Stock> stocks, double thresholdPercentage) {
         List<Stock> nearAllTimeHighStocks = new ArrayList<>();
-        
+
         for (Stock stock : stocks) {
             double high = stock.getHigh();
             double currentPrice = stock.getCurrentPrice();
 
-            
             double thresholdPrice = high * (1 - thresholdPercentage / 100);
 
-           
             if (currentPrice >= thresholdPrice) {
-            	 System.out.println("Near All-Time lOW Stock: " + stock);
+                System.out.println("Near All-Time High Stock: " + stock);
                 nearAllTimeHighStocks.add(stock);
             }
         }
@@ -179,11 +177,10 @@ public class StockService {
         return nearAllTimeHighStocks;
     }
 
-
-
     public List<Stock> findStocksNearAllTimeLow() {
         return stockRepository.findAll();
     }
+
     public List<AllTimeHighStocks> findStocksNearAllTimeHigh() {
         return allTimeHighStocksRepository.findAll();
     }
@@ -197,6 +194,33 @@ public class StockService {
             return true;
         } catch (NumberFormatException e) {
             return false;
+        }
+    }
+
+   
+    private AllTimeHighStocks convertToAllTimeHighStocks(Stock stock) {
+        AllTimeHighStocks allTimeHighStock = new AllTimeHighStocks();
+        allTimeHighStock.setSymbol(stock.getSymbol());
+        allTimeHighStock.setHigh(stock.getHigh());
+        allTimeHighStock.setLow(stock.getLow());
+        allTimeHighStock.setCurrentPrice(stock.getCurrentPrice());
+        return allTimeHighStock;
+    }
+
+   
+    private void processAndSaveNearAllTimeHighStocks(List<Stock> nearAllTimeHighStocks) {
+        for (Stock stock : nearAllTimeHighStocks) {
+            AllTimeHighStocks existingStock = allTimeHighStocksRepository.findBySymbol(stock.getSymbol());
+            AllTimeHighStocks allTimeHighStock = convertToAllTimeHighStocks(stock);
+
+            if (existingStock != null) {
+                existingStock.setHigh(stock.getHigh());
+                existingStock.setLow(stock.getLow());
+                existingStock.setCurrentPrice(stock.getCurrentPrice());
+                allTimeHighStocksRepository.save(existingStock);
+            } else {
+                allTimeHighStocksRepository.save(allTimeHighStock);
+            }
         }
     }
 }

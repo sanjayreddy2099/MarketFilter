@@ -6,5 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AllTimeHighStocksRepository extends JpaRepository<AllTimeHighStocks, Long> {
+	
+	AllTimeHighStocks findBySymbol(String symbol);
     
 }
